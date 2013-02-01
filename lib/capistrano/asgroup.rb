@@ -10,12 +10,6 @@ module Capistrano
 
       def asgroupname(which, *args)
 
-        # Data that will come from Cap script
-        #@accessKey = ''
-        #@secretKey = ''
-        #@asGroupName = 'myASGrpOne'
-        #@asGroupName = 'AutoScaleTest-myASGrpOne-1AMCZOBLOMM40'
-
         # Get Auto Scaling API obj
         @as_api ||= RightAws::AsInterface.new(fetch(:aws_access_key_id), fetch(:aws_secret_access_key), {})
         # Get EC2 API obj

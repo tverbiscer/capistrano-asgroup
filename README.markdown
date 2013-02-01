@@ -61,23 +61,39 @@ bundle install
 
 ### Configure Capistrano
 
+Instead of manually defining the hostnames to deploy to like this:
+
+```ruby
+role :web, 'mysever1.example.com','myserver2.example.com'
+```
+
+Simple do this where <my-autoscale-group-name> is the name of an autoscale group:
+
+```ruby
+asgroupname '<my-autoscale-group-name>', :web
+```
+
+So instead of:
+
+```ruby
+task :production do
+  role :web, 'mysever1.example.com','myserver2.example.com'
+  logger.info 'Deploying to the PRODUCTION environment!'
+end
+```
+
+You would do:
+
 ```ruby
 require 'capistrano/asgroup'
 
 task :production do
-  tag 'production-github-web', :web
-  tag 'production-github-job', :job
+  asgroupname 'production-github-web', :web
   logger.info 'Deploying to the PRODUCTION environment!'
-end
-
-task :staging do
-  tag 'staging-github-web', :web
-  tag 'staging-github-job', :job
-  logger.info 'Deploying to the STAGING environment!'
 end
 ```
 
 ## License
 
-capistrano-asgroup is copyright 2012 by [Thomas Verbiscer](http://tom.verbiscer.com/), released under the MIT License (see LICENSE for details).
+capistrano-asgroup is copyright 2013 by [Thomas Verbiscer](http://tom.verbiscer.com/), released under the MIT License (see LICENSE for details).
 
