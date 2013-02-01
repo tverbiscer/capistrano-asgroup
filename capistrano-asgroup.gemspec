@@ -5,6 +5,7 @@ Gem::Specification.new do |s|
   s.name        = 'capistrano-asgroup'
   s.version     = '0.0.1'
   s.authors     = ['Thomas Verbiscer']
+  s.date        = '2013-01-17'
   s.email       = ['asgroup@verbiscer.com']
   s.homepage    = 'https://github.com/tverbiscer/capistrano-asgroup'
   s.summary     = 'A Capistrano plugin aimed at easing the pain of deploying to AWS Auto Scale instances.'

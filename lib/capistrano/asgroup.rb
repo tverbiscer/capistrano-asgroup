@@ -8,7 +8,7 @@ module Capistrano
   class Configuration
     module Asgroup
 
-      def asgroup(which, *args)
+      def asgroupname(which, *args)
 
         # Data that will come from Cap script
         #@accessKey = ''
@@ -37,6 +37,7 @@ module Capistrano
                         # Match the instance IDs
                         if instance[:aws_instance_id] == asInstance[:instance_id]
                             puts "AS Instance ID: #{asInstance[:instance_id]} DNS: #{instance[:dns_name]}"
+                            server(instance[:dns_name], *args)
                         end
                     end
                 end
