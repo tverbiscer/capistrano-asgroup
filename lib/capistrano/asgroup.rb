@@ -13,7 +13,7 @@ module Capistrano
         # Get Auto Scaling API obj
         @as_api ||= RightAws::AsInterface.new(fetch(:aws_access_key_id), fetch(:aws_secret_access_key), {:region => fetch(:aws_region)})
         # Get EC2 API obj
-        @ec2_api ||= RightAws::Ec2.new(fetch(:aws_access_key_id), fetch(:aws_secret_access_key), {})
+        @ec2_api ||= RightAws::Ec2.new(fetch(:aws_access_key_id), fetch(:aws_secret_access_key), {:region => fetch(:aws_region)})
 
         # Get descriptions of all the Auto Scaling groups
         @autoScaleDesc = @as_api.describe_auto_scaling_groups
