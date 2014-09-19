@@ -7,9 +7,12 @@ end
 module Capistrano
   class Configuration
     module Asgroup
-
       def asgroupname(which, *args)
-
+        
+        if not exists?(:asgroup_use_private_ips)
+          set :asgroup_use_private_ips, false
+        end
+        
         # Get Auto Scaling API obj
         @as_api ||= RightAws::AsInterface.new(fetch(:aws_access_key_id), fetch(:aws_secret_access_key), {:region => fetch(:aws_region)})
         # Get EC2 API obj
@@ -22,20 +25,25 @@ module Capistrano
 
         # Find the right Auto Scaling group
         @autoScaleDesc.each do |asGroup|
-            # Look for an exact name match or Cloud Formation style match (<cloud_formation_script>-<as_name>-<generated_id>)
-            if asGroup[:auto_scaling_group_name] == which or asGroup[:auto_scaling_group_name].scan("-#{which}-").length > 0
-                # For each instance in the Auto Scale group
-                asGroup[:instances].each do |asInstance|
-                    # Get description of all instances so that we can find the DNS names based on instance ID
-                    @ec2DescInst.delete_if{|i| i[:aws_state] != "running"}.each do |instance|
-                        # Match the instance IDs
-                        if instance[:aws_instance_id] == asInstance[:instance_id]
-                            puts "AS Instance ID: #{asInstance[:instance_id]} DNS: #{instance[:dns_name]}"
-                            server(instance[:dns_name], *args)
-                        end
-                    end
+          # Look for an exact name match or Cloud Formation style match (<cloud_formation_script>-<as_name>-<generated_id>)
+          if asGroup[:auto_scaling_group_name] == which or asGroup[:auto_scaling_group_name].scan("-#{which}-").length > 0
+            # For each instance in the Auto Scale group
+            asGroup[:instances].each do |asInstance|
+              # Get description of all instances so that we can find the DNS names based on instance ID
+              @ec2DescInst.delete_if{|i| i[:aws_state] != "running"}.each do |instance|
+                # Match the instance IDs
+                if instance[:aws_instance_id] == asInstance[:instance_id]                           
+                  if asgroup_use_private_ips != true
+                    puts "AS Instance ID: #{asInstance[:instance_id]} DNS: #{instance[:dns_name]}"
+                    server(instance[:dns_name], *args)
+                  else
+                    puts "AS Instance ID: #{asInstance[:instance_id]} Private IP: #{instance[:private_ip_address]}"
+                    server(instance[:private_ip_address], *args)
+                  end
                 end
+              end
             end
+          end
         end
       end
     end

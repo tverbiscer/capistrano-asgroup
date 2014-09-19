@@ -1,5 +1,8 @@
 ## Introduction
 
+Disclaimer:
+This a continuation of Thomas Verbiscer project https://github.com/tverbiscer/capistrano-asgroup which seams to be abandonned.
+
 capistrano-asgroup is a [Capistrano](https://github.com/capistrano/capistrano) plugin designed to simplify the
 task of deploying to infrastructure hosted on [Amazon EC2](http://aws.amazon.com/ec2/). It was
 completely inspired by the [capistrano-ec2group](https://github.com/logandk/capistrano-ec2group) and 
@@ -22,9 +25,17 @@ with limited capabilities for this type of purpose. Specify the following in you
 Capistrano configuration:
 
 ```ruby
+set :aws_access_key_id, ENV['AWS_ACCESS_KEY_ID']
+set :aws_secret_access_key, ENV['AWS_SECRET_ACCESS_KEY']
+```
+
+or the less secure option to keep the keys in code:
+
+```ruby
 set :aws_access_key_id, '...'
 set :aws_secret_access_key, '...'
 ```
+
 
 ### Get the gem
 
@@ -64,6 +75,7 @@ bundle install
 Instead of manually defining the hostnames to deploy to like this:
 
 ```ruby
+set :aws_region, 'eu-west-1' # set the region of AWS
 role :web, 'mysever1.example.com','myserver2.example.com'
 ```
 
@@ -92,6 +104,15 @@ task :production do
   logger.info 'Deploying to the PRODUCTION environment!'
 end
 ```
+
+### Additional configuration
+
+In order to deploy through a NAT instance in AWS VPC, you will need the instances private IP address instead of the DNS name
+
+```ruby
+set :asgroup_use_private_ips, true
+```
+
 
 ## License
 
