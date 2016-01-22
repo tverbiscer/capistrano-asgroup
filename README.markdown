@@ -76,13 +76,15 @@ Instead of manually defining the hostnames to deploy to like this:
 
 ```ruby
 set :aws_region, 'eu-west-1' # set the region of AWS
-role :web, 'mysever1.example.com','myserver2.example.com'
+
+set :aws_region, "us-west-1"
+set :asgroup_use_private_ips, true
 ```
 
-Simple do this where <my-autoscale-group-name> is the name of an autoscale group:
+Simple do this where <my-autoscale-group-name> is the name of an autoscale group, with optional role:
 
 ```ruby
-asgroupname '<my-autoscale-group-name>', :web
+Asgroup.addInstances("<my-autoscale-group-name>"[, role])
 ```
 
 So instead of:
@@ -100,7 +102,7 @@ You would do:
 require 'capistrano/asgroup'
 
 task :production do
-  asgroupname 'production-github-web', :web
+  Asgroup.addInstances("my-asg-name", :web)
   logger.info 'Deploying to the PRODUCTION environment!'
 end
 ```
@@ -116,5 +118,5 @@ set :asgroup_use_private_ips, true
 
 ## License
 
-capistrano-asgroup is copyright 2013 by [Thomas Verbiscer](http://tom.verbiscer.com/), released under the MIT License (see LICENSE for details).
-
+Originally developed by:
+[Thomas Verbiscer](http://tom.verbiscer.com/), released under the MIT License
