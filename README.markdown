@@ -77,7 +77,7 @@ set :asgroup_use_private_ips, true
 Simple do this where <my-autoscale-group-name> is the name of an autoscale group, with optional role:
 
 ```ruby
-Asgroup.addInstances("<my-autoscale-group-name>"[, role])
+Capistrano::Asgroup.addInstances("<my-autoscale-group-name>"[, role])
 ```
 
 So instead of:
