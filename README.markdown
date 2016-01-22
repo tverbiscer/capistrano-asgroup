@@ -24,18 +24,11 @@ will need access to the Amazon AWS API.  It is recommended to use IAM to create 
 with limited capabilities for this type of purpose. Specify the following in your
 Capistrano configuration:
 
+You can use aws-sdk credentials described in [AWS docs](http://docs.aws.amazon.com/sdkforruby/api/index.html)
 ```ruby
 set :aws_access_key_id, ENV['AWS_ACCESS_KEY_ID']
 set :aws_secret_access_key, ENV['AWS_SECRET_ACCESS_KEY']
 ```
-
-or the less secure option to keep the keys in code:
-
-```ruby
-set :aws_access_key_id, '...'
-set :aws_secret_access_key, '...'
-```
-
 
 ### Get the gem
 
