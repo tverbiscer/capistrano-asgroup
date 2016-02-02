@@ -1,5 +1,8 @@
 ## Introduction
 
+Disclaimer:
+This a continuation of Thomas Verbiscer project https://github.com/tverbiscer/capistrano-asgroup which seams to be abandonned.
+
 capistrano-asgroup is a [Capistrano](https://github.com/capistrano/capistrano) plugin designed to simplify the
 task of deploying to infrastructure hosted on [Amazon EC2](http://aws.amazon.com/ec2/). It was
 completely inspired by the [capistrano-ec2group](https://github.com/logandk/capistrano-ec2group) and 
@@ -21,9 +24,10 @@ will need access to the Amazon AWS API.  It is recommended to use IAM to create 
 with limited capabilities for this type of purpose. Specify the following in your
 Capistrano configuration:
 
+You can use aws-sdk credentials described in [AWS docs](http://docs.aws.amazon.com/sdkforruby/api/index.html)
 ```ruby
-set :aws_access_key_id, '...'
-set :aws_secret_access_key, '...'
+set :aws_access_key_id, ENV['AWS_ACCESS_KEY_ID']
+set :aws_secret_access_key, ENV['AWS_SECRET_ACCESS_KEY']
 ```
 
 ### Get the gem
@@ -64,13 +68,16 @@ bundle install
 Instead of manually defining the hostnames to deploy to like this:
 
 ```ruby
-role :web, 'mysever1.example.com','myserver2.example.com'
+set :aws_region, 'eu-west-1' # set the region of AWS
+
+set :aws_region, "us-west-1"
+set :asgroup_use_private_ips, true
 ```
 
-Simple do this where <my-autoscale-group-name> is the name of an autoscale group:
+Simple do this where <my-autoscale-group-name> is the name of an autoscale group, with optional role:
 
 ```ruby
-asgroupname '<my-autoscale-group-name>', :web
+Capistrano::Asgroup.addInstances("<my-autoscale-group-name>"[, role])
 ```
 
 So instead of:
@@ -88,12 +95,21 @@ You would do:
 require 'capistrano/asgroup'
 
 task :production do
-  asgroupname 'production-github-web', :web
+  Asgroup.addInstances("my-asg-name", :web)
   logger.info 'Deploying to the PRODUCTION environment!'
 end
 ```
 
+### Additional configuration
+
+In order to deploy through a NAT instance in AWS VPC, you will need the instances private IP address instead of the DNS name
+
+```ruby
+set :asgroup_use_private_ips, true
+```
+
+
 ## License
 
-capistrano-asgroup is copyright 2013 by [Thomas Verbiscer](http://tom.verbiscer.com/), released under the MIT License (see LICENSE for details).
-
+Originally developed by:
+[Thomas Verbiscer](http://tom.verbiscer.com/), released under the MIT License

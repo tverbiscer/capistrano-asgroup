@@ -1,46 +1,52 @@
-require 'right_aws'
-
-unless Capistrano::Configuration.respond_to?(:instance)
-  abort 'capistrano/asgroup requires Capistrano >= 2'
-end
+require 'rubygems'
+require 'aws-sdk'
+require 'capistrano'
 
 module Capistrano
-  class Configuration
-    module Asgroup
+    class Asgroup
+        def self.addInstances(which, *args)
+            if nil == fetch(:asgroup_use_private_ips)
+              set :asgroup_use_private_ips, false
+            end
+            @ec2_api = Aws::EC2::Client.new(
+              region: fetch(:aws_region)
+              # credentials from ENV
+            )
 
-      def asgroupname(which, *args)
+            @as_api = Aws::AutoScaling::Client.new(region: fetch(:aws_region))
 
-        # Get Auto Scaling API obj
-        @as_api ||= RightAws::AsInterface.new(fetch(:aws_access_key_id), fetch(:aws_secret_access_key), {})
-        # Get EC2 API obj
-        @ec2_api ||= RightAws::Ec2.new(fetch(:aws_access_key_id), fetch(:aws_secret_access_key), {})
+             # Get descriptions of all the Auto Scaling groups
+            @autoScaleDesc = @as_api.describe_auto_scaling_groups
+             # Get descriptions of all the EC2 instances
+            @ec2DescInst = @ec2_api.describe_instances
 
-        # Get descriptions of all the Auto Scaling groups
-        @autoScaleDesc = @as_api.describe_auto_scaling_groups
-        # Get descriptions of all the EC2 instances
-        @ec2DescInst = @ec2_api.describe_instances
-
-        # Find the right Auto Scaling group
-        @autoScaleDesc.each do |asGroup|
-            # Look for an exact name match or Cloud Formation style match (<cloud_formation_script>-<as_name>-<generated_id>)
-            if asGroup[:auto_scaling_group_name] == which or asGroup[:auto_scaling_group_name].scan("-#{which}-").length > 0
-                # For each instance in the Auto Scale group
-                asGroup[:instances].each do |asInstance|
-                    # Get description of all instances so that we can find the DNS names based on instance ID
-                    @ec2DescInst.delete_if{|i| i[:aws_state] != "running"}.each do |instance|
-                        # Match the instance IDs
-                        if instance[:aws_instance_id] == asInstance[:instance_id]
-                            puts "AS Instance ID: #{asInstance[:instance_id]} DNS: #{instance[:dns_name]}"
-                            server(instance[:dns_name], *args)
-                        end
+            # Find the right Auto Scaling group
+            @autoScaleDesc[:auto_scaling_groups].each do |asGroup|
+                @asGroupInstanceIds = Array.new
+                  # Look for an exact name match or Cloud Formation style match (<cloud_formation_script>-<as_name>-<generated_id>)
+                if asGroup[:auto_scaling_group_name] == which or asGroup[:auto_scaling_group_name].scan("{which}").length > 0
+                    # For each instance in the Auto Scale group
+                    asGroup[:instances].each do |asInstance|
+                       @asGroupInstanceIds.push(asInstance[:instance_id])
                     end
                 end
             end
-        end
-      end
-    end
 
-    include Asgroup
-  end
+            # figure out the instance IP's
+            @ec2DescInst[:reservations].each do |reservation|
+                #remove instances that are either not in this asGroup or not in the "running" state
+                reservation[:instances].delete_if{ |a| not @asGroupInstanceIds.include?(a[:instance_id]) or a[:state][:name] != "running" }.each do |instance|
+                    puts "Found ASG #{which} Instance ID: #{instance[:instance_id]} in VPC: #{instance[:vpc_id]}"
+                    if true == fetch(:asgroup_use_private_ips)
+                        server(instance[:private_ip_address], args)
+                    else
+                        server(instance[:public_ip_address], args)
+                    end
+
+                end
+            end
+
+       end
+    end
 end
 
